@@ -22,7 +22,7 @@ git clone git@github.com:AnastasDan/referral_system.git
 docker compose -f docker-compose.yml up
 ```
 
-4. После запуска выполняем миграции, сбор статических файлов, а также выгрузку ингредиентов в базу данных. По желанию можно создать суперпользователя:
+4. После запуска выполняем миграции. По желанию можно создать суперпользователя:
 
 ```bash
 docker compose -f docker-compose.yml exec backend python manage.py migrate
