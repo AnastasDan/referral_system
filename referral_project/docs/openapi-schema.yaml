@@ -1,0 +1,495 @@
+openapi: 3.0.3
+info:
+  title: Реферальная система
+  version: "1.0"
+  description: 'API для реферальной системы.'
+  contact:
+    name: Anastas Danielian
+    email: danielyan.anastas@gmail.com
+    url: https://github.com/AnastasDan
+paths:
+  /api/auth/jwt/create/:
+    post:
+      operationId: auth_jwt_create_create
+      description: |-
+        Принимает учетные данные пользователя и возвращает пару токенов JSON web (доступа и обновления),
+        чтобы подтвердить аутентификацию этих учетных данных.
+      tags:
+      - Аутентификация
+      summary: Создание токена
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenObtainPair'
+          description: 'Успешный запрос'
+  /api/auth/jwt/refresh/:
+    post:
+      operationId: auth_jwt_refresh_create
+      description: |-
+        Принимает обновляемый токен JSON web и возвращает новый токен доступа JSON web,
+        если обновляемый токен действителен.
+      tags:
+      - Аутентификация
+      summary: Обновление токена
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: 'Успешный запрос'
+  /api/auth/jwt/verify/:
+    post:
+      operationId: auth_jwt_verify_create
+      description: |-
+        Принимает токен и указывает, действителен ли он. Этот метод не предоставляет информацию
+        о пригодности токена для конкретного использования.
+      tags:
+      - Аутентификация
+      summary: Проверка токена
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenVerify'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenVerify'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenVerify'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenVerify'
+          description: 'Успешный запрос'
+  /api/referral_codes/:
+    get:
+      operationId: referral_codes_retrieve
+      tags:
+      - Реферальные коды
+      summary: Получение реферрального кода
+      description: Возвращает активный реферальный код.
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReferralCode'
+          description: 'Успешный запрос'
+    post:
+      operationId: referral_codes_create
+      tags:
+      - Реферальные коды
+      summary: Создание реферрального кода
+      description: Создает новый реферальный код.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReferralCode'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ReferralCode'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReferralCode'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReferralCode'
+          description: 'Успешный запрос'
+    delete:
+      operationId: referral_codes_destroy
+      tags:
+      - Реферальные коды
+      summary: Удаление реферрального кода
+      description: Удаляет реферальный код.
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: 'Нет тела ответа'
+  /api/send_code/:
+    post:
+      operationId: send_code_create
+      tags:
+      - Отправка кода
+      summary: Отправка кода
+      description: 'Отправляет код реферера на указанный адрес электронной почты.'
+      security:
+      - jwtAuth: []
+      - {}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailSerializer'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/EmailSerializer'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EmailSerializer'
+        required: true
+      responses:
+        '200':
+          description: 'Реферальный код отправлен успешно'
+        '400':
+          description: 'Ошибка: У вас нет кода или другая проблема'
+        '404':
+          description: 'Ошибка: Почта не зарегистрирована'
+        '500':
+          description: 'Внутренняя ошибка сервера'
+  /api/users/:
+    get:
+      operationId: users_list
+      tags:
+      - Пользователи
+      summary: Получение списка пользователей
+      description: Возвращает список всех пользователей в системе.
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+          description: 'Успешный запрос'
+    post:
+      operationId: users_create
+      tags:
+      - Пользователи
+      summary: Создание пользователя
+      description: Создает нового пользователя на основе предоставленных данных.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/User'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: 'Успешный запрос'
+  /api/users/{id}/:
+    get:
+      operationId: users_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: 'Уникальный целочисленный идентификатор пользователя.'
+        required: true
+      tags:
+      - Пользователи
+      summary: Получение пользователя по ID
+      description: Возвращает информацию о конкретном пользователе.
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: 'Успешный запрос'
+    put:
+      operationId: users_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: 'Уникальный целочисленный идентификатор пользователя.'
+        required: true
+      tags:
+      - Пользователи
+      summary: Обновление пользователя
+      description: Обновляет информацию о конкретном пользователе.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/User'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: 'Успешный запрос'
+    patch:
+      operationId: users_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: 'Уникальный целочисленный идентификатор пользователя.'
+        required: true
+      tags:
+      - Пользователи
+      summary: Частичное обновление пользователя
+      description: Обновляет часть информации о конкретном пользователе.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: 'Успешный запрос'
+    delete:
+      operationId: users_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: 'Уникальный целочисленный идентификатор пользователя.'
+        required: true
+      tags:
+      - Пользователи
+      summary: Удаление пользователя
+      description: Удаляет конкретного пользователя из системы.
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: 'Нет тела ответа'
+  /api/users/{id}/referrals/:
+    get:
+      operationId: users_referrals_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: 'Уникальный целочисленный идентификатор пользователя.'
+        required: true
+      tags:
+      - Пользователи
+      summary: Получение реферралов пользователя
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: 'Успешный запрос'
+components:
+  schemas:
+    PatchedUser:
+      type: object
+      description: 'Сериализатор для модели пользователя.'
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        email:
+          type: string
+          format: email
+          title: 'Почтовый адрес'
+          maxLength: 254
+        username:
+          type: string
+          title: 'Логин'
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        first_name:
+          type: string
+          title: 'Имя'
+          maxLength: 150
+        last_name:
+          type: string
+          title: 'Фамилия'
+          maxLength: 150
+        password:
+          type: string
+          writeOnly: true
+          maxLength: 128
+        referral_code:
+          type: string
+          writeOnly: true
+    ReferralCode:
+      type: object
+      description: 'Сериализатор для модели реферрального кода.'
+      properties:
+        code:
+          type: string
+          title: 'Код реферрала'
+          maxLength: 10
+        expiry_date:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - code
+      - expiry_date
+    TokenObtainPair:
+      type: object
+      properties:
+        email:
+          type: string
+          writeOnly: true
+        password:
+          type: string
+          writeOnly: true
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+          readOnly: true
+      required:
+      - access
+      - email
+      - password
+      - refresh
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+          writeOnly: true
+      required:
+      - access
+      - refresh
+    TokenVerify:
+      type: object
+      properties:
+        token:
+          type: string
+          writeOnly: true
+      required:
+      - token
+    EmailSerializer:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+      required:
+        - email
+    User:
+      type: object
+      description: 'Сериализатор для модели пользователя.'
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        email:
+          type: string
+          format: email
+          title: 'Почтовый адрес'
+          maxLength: 254
+        username:
+          type: string
+          title: 'Логин'
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        first_name:
+          type: string
+          title: 'Имя'
+          maxLength: 150
+        last_name:
+          type: string
+          title: 'Фамилия'
+          maxLength: 150
+        password:
+          type: string
+          writeOnly: true
+          maxLength: 128
+        referral_code:
+          type: string
+          writeOnly: true
+      required:
+      - email
+      - first_name
+      - id
+      - last_name
+      - password
+      - username
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
